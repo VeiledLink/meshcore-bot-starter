@@ -2,8 +2,8 @@
 # One-time install on a Raspberry Pi (Raspberry Pi OS / Debian), run as your
 # normal user (not root - it uses sudo when it needs to):
 #
-#   git clone https://github.com/VeiledLink/meshcore-kiss-starter ~/meshcore-kiss-starter
-#   cd ~/meshcore-kiss-starter && ./install.sh
+#   git clone https://github.com/VeiledLink/meshcore-bot-starter ~/meshcore-bot-starter
+#   cd ~/meshcore-bot-starter && ./install.sh
 #
 # It installs meshcore-pi (patched for KISS modem radios) and RemoteTerm, asks
 # your bot's settings (setup.py), runs both as services that start at boot,

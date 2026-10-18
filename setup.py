@@ -133,7 +133,7 @@ def radio_config(bot_name):
 
     key = re.search(r'^privatekey\s*=\s*"([0-9a-fA-F]+)"', old, re.M)
     lines = [
-        "# Written by meshcore-kiss-starter/setup.py - run it again to change these.",
+        "# Written by meshcore-bot-starter/setup.py - run it again to change these.",
         'interfaces = ["kiss"]', 'devices = ["companion"]', "",
         "[dispatcher]", "pass_internal = false", "",
         "[interface.kiss]", 'type = "kiss"', f'port = "{port}"',

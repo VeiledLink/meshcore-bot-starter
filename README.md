@@ -1,7 +1,8 @@
 # MeshCore bot starter kit
 
-Everything you need to run your own **MeshCore bot** on a Raspberry Pi: one install script, a few setup
-questions, and your bot is on the mesh. Add your own commands without touching any code.
+Everything you need to run your own **MeshCore bot** on a Raspberry Pi, with a **KISS modem radio** or a
+regular **companion radio** (USB, Wi-Fi or Bluetooth): a few setup questions and your bot is on the mesh. Add
+your own commands without touching any code.
 
 It works with **two kinds of radio setup**, see [Choose your setup](#choose-your-setup). The radio and node setup
 comes from **VLK-Bot** on the Central Valley (California) mesh. The bot here is a separate, simpler starter bot:
@@ -66,8 +67,8 @@ Then plug the radio into the Pi.
 
 **2. On the Pi, run:**
 ```bash
-git clone https://github.com/VeiledLink/meshcore-kiss-starter ~/meshcore-kiss-starter
-cd ~/meshcore-kiss-starter
+git clone https://github.com/VeiledLink/meshcore-bot-starter ~/meshcore-bot-starter
+cd ~/meshcore-bot-starter
 ./install.sh
 ```
 The installer:
@@ -97,8 +98,8 @@ Answer: **Transport: 1 (Serial, auto-detect)** (or 2 to type the port, e.g. `/de
 
 **3. Install the bot:**
 ```bash
-git clone https://github.com/VeiledLink/meshcore-kiss-starter ~/meshcore-kiss-starter
-cd ~/meshcore-kiss-starter
+git clone https://github.com/VeiledLink/meshcore-bot-starter ~/meshcore-bot-starter
+cd ~/meshcore-bot-starter
 python3 setup.py --bot          # bot name (same as the radio's name), channels, your own commands
 python3 bot/deploy_bot.py       # sends the bot to RemoteTerm
 ```
@@ -109,7 +110,7 @@ Skip `install.sh` and the `meshcore-pi/` folder: those are only for Setup A.
 ## Changing things later
 
 ```bash
-cd ~/meshcore-kiss-starter
+cd ~/meshcore-bot-starter
 python3 setup.py --bot          # change bot settings or add/remove commands
 python3 bot/deploy_bot.py       # send the updated bot (takes effect right away)
 ```
@@ -134,7 +135,7 @@ Remove a command by entering `-rules`.
 
 Pull the latest fixes and re-apply them:
 ```bash
-cd ~/meshcore-kiss-starter && git pull
+cd ~/meshcore-bot-starter && git pull
 meshcore-pi/patch_meshcore_pi.sh && sudo systemctl restart meshcore-pi
 python3 bot/deploy_bot.py
 ```
@@ -181,3 +182,5 @@ firewall that only allows your own devices (e.g. via Tailscale). The node's port
 ## License
 
 MIT. See `LICENSE`. meshcore-pi, RemoteTerm and MeshCore are separate projects under their own licenses.
+
+*This repo used to be called `meshcore-kiss-starter`; old links and clones still work (GitHub redirects them).*
