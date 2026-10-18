@@ -3,9 +3,9 @@
 Everything you need to run your own **MeshCore bot** on a Raspberry Pi: one install script, a few setup
 questions, and your bot is on the mesh. Add your own commands without touching any code.
 
-It runs on a radio with **MeshCore's official KISS modem firmware**, so there's no custom radio firmware to
-build or maintain. The radio and node setup comes from **VLK-Bot** on the Central Valley (California) mesh.
-The bot here is a separate, simpler starter bot: VLK-Bot itself is private for now.
+It works with **two kinds of radio setup**, see [Choose your setup](#choose-your-setup). The radio and node setup
+comes from **VLK-Bot** on the Central Valley (California) mesh. The bot here is a separate, simpler starter bot:
+VLK-Bot itself is private for now.
 
 ## What the bot does
 
@@ -22,18 +22,33 @@ People use commands by **DM**, or in a channel with **`@[YourBot] command`**. In
 **`test`** works on its own. The bot never talks in channels you mark as quiet (like Public), and answers each
 person at most once every 30 seconds (you can change this).
 
-## What you need
+## Choose your setup
 
-- A **Raspberry Pi** (3, 4, 5 or Zero 2 W) with Raspberry Pi OS (Bookworm or newer) and internet access
-- A **LoRa radio MeshCore supports**, e.g. a RAK4631 (WisBlock), **with an antenna**
-- A USB cable from the radio to the Pi
+The bot runs inside **RemoteTerm** (a web UI for MeshCore that can run bot code). What differs is how RemoteTerm
+reaches your radio:
 
-## Install (about 15 minutes)
+| | **A. KISS modem radio** | **B. Companion radio over USB** |
+|---|---|---|
+| Radio firmware | MeshCore **KISS modem** | MeshCore **companion** (the normal firmware phones connect to) |
+| Where the node runs | on the Pi (meshcore-pi): keys and routing on the Pi | on the radio itself |
+| Connection | USB → meshcore-pi → RemoteTerm | USB → RemoteTerm directly |
+| Install | `./install.sh` does everything | install RemoteTerm, then the bot (steps below) |
+| Good for | several identities on one radio, keys kept off the radio | the simplest setup, if you already have a companion radio |
+
+Not sure? If your radio already works with the MeshCore phone app, it's running **companion** firmware: use **B**.
+A companion radio over **Wi-Fi or Bluetooth** works the same way as B. Choose TCP or BLE instead of Serial
+in RemoteTerm's installer.
+
+**What you need (both):** a **Raspberry Pi** (3, 4, 5 or Zero 2 W) with Raspberry Pi OS (Bookworm or newer)
+and internet; a **LoRa radio MeshCore supports** (e.g. RAK4631) **with an antenna**; a USB cable to the Pi.
+**Never power a radio without its antenna.**
+
+## Setup A: KISS modem radio (about 15 minutes)
 
 **1. Flash the radio with the KISS modem firmware.** Get your board's **kiss_modem** build from MeshCore's
 releases (e.g. `RAK_4631_kiss_modem`), or use the MeshCore web flasher if it lists one for your board. For a
 RAK4631: double-tap its reset button and copy the `.uf2` file onto the `RAK4631` drive that appears.
-Then plug the radio into the Pi. **Never power a radio without its antenna.**
+Then plug the radio into the Pi.
 
 **2. On the Pi, run:**
 ```bash
@@ -45,12 +60,37 @@ The installer:
 1. installs **meshcore-pi** (the MeshCore node software) and adds KISS radio support
 2. asks your **bot settings**: name, channels, your own commands, and the radio and frequency
 3. starts the node as a service (it starts at boot and restarts by itself)
-4. installs **RemoteTerm** (a web UI that also runs the bot). Its installer asks a few questions, and
-   `install.sh` tells you exactly what to answer.
+4. installs **RemoteTerm**. Its installer asks a few questions, and `install.sh` tells you exactly what to answer.
 5. sends your bot to RemoteTerm
 
 **3. Try it:** send `test` in your test channel, or DM your bot `help`.
-The web UI is at `http://<your-pi>.local:8000`, where you can see messages and send your own.
+The web UI is at `http://<your-pi>.local:8000`.
+
+## Setup B: companion radio over USB (about 10 minutes)
+
+**1. The radio:** keep its normal **companion** firmware and settings. Set its name, frequency and channels
+with the MeshCore app as usual. Then plug it into the Pi by USB. (Close the phone app's connection first:
+only one app can talk to the radio at a time.)
+
+**2. Install RemoteTerm** ([its README](https://github.com/jkingsman/Remote-Terminal-for-MeshCore)):
+```bash
+sudo apt-get install -y git curl && curl -LsSf https://astral.sh/uv/install.sh | sh && exec bash
+git clone https://github.com/jkingsman/Remote-Terminal-for-MeshCore ~/Remote-Terminal-for-MeshCore
+cd ~/Remote-Terminal-for-MeshCore && bash scripts/setup/install_service.sh
+```
+Answer: **Transport: 1 (Serial, auto-detect)** (or 2 to type the port, e.g. `/dev/ttyACM0`),
+**Frontend: 2 (prebuilt)**, **Enable bots: y**, Basic Auth: your choice.
+
+**3. Install the bot:**
+```bash
+git clone https://github.com/VeiledLink/meshcore-kiss-starter ~/meshcore-kiss-starter
+cd ~/meshcore-kiss-starter
+python3 setup.py --bot          # bot name (same as the radio's name), channels, your own commands
+python3 bot/deploy_bot.py       # sends the bot to RemoteTerm
+```
+Skip `install.sh` and the `meshcore-pi/` folder: those are only for Setup A.
+
+**4. Try it:** send `test` in your test channel, or DM your bot `help`.
 
 ## Changing things later
 
