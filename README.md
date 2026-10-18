@@ -39,6 +39,20 @@ Not sure? If your radio already works with the MeshCore phone app, it's running 
 A companion radio over **Wi-Fi or Bluetooth** works the same way as B. Choose TCP or BLE instead of Serial
 in RemoteTerm's installer.
 
+### Which setup for my radio?
+
+| Radio | Setup A (KISS) | Setup B (companion over USB) | Notes |
+|---|---|---|---|
+| **RAK4631 / WisBlock** (RAK19007, RAK19003…) | ✅ tested (`RAK_4631_kiss_modem`) | ✅ | The radio this kit was built on. |
+| **Station G3** with its own MeshCore board | ? only if a KISS build exists for it | ✅ | 1 W radio. Flash MeshCore **companion** firmware and use B. |
+| **Station G3** with a **Pi Zero 2 W** as its computer | ✖ | ✖ | Here the Pi drives the radio directly over SPI (no USB). Not covered by this kit yet. |
+| **Heltec V3/V4, LilyGO T-Beam / T3-S3, Seeed XIAO**, other boards | ? check for a `*_kiss_modem` build | ✅ | Any board with MeshCore companion firmware works with B. |
+
+**? = check MeshCore's releases** for a file named `<your board>_kiss_modem`. If there isn't one, use Setup B.
+**When in doubt, use Setup B:** companion firmware exists for nearly every MeshCore board.
+High-power boards (1 W, like the G3) need a good antenna and a solid power supply; lower the transmit power if
+the antenna is close to other radios.
+
 **What you need (both):** a **Raspberry Pi** (3, 4, 5 or Zero 2 W) with Raspberry Pi OS (Bookworm or newer)
 and internet; a **LoRa radio MeshCore supports** (e.g. RAK4631) **with an antenna**; a USB cable to the Pi.
 **Never power a radio without its antenna.**
