@@ -182,5 +182,3 @@ firewall that only allows your own devices (e.g. via Tailscale). The node's port
 ## License
 
 MIT. See `LICENSE`. meshcore-pi, RemoteTerm and MeshCore are separate projects under their own licenses.
-
-*This repo used to be called `meshcore-kiss-starter`; old links and clones still work (GitHub redirects them).*
