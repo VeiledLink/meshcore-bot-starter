@@ -4,7 +4,7 @@ Everything you need to run your own **MeshCore bot** on a Raspberry Pi, with a *
 regular **companion radio** (USB, Wi-Fi or Bluetooth): a few setup questions and your bot is on the mesh. Add
 your own commands without touching any code.
 
-It works with **two kinds of radio setup**, see [Choose your setup](#choose-your-setup). The radio and node setup
+It works with **three kinds of radio setup**, see [Choose your setup](#choose-your-setup). The radio and node setup
 comes from **VLK-Bot** on the Central Valley (California) mesh. The bot here is a separate, simpler starter bot:
 VLK-Bot itself is private for now.
 
@@ -36,6 +36,9 @@ reaches your radio:
 | Install | `./install.sh` does everything | install RemoteTerm, then the bot (steps below) |
 | Good for | several identities on one radio, keys kept off the radio | the simplest setup, if you already have a companion radio |
 
+**C. Station G3 with a Pi Zero 2 W:** the Pi plugs into the G3 and drives its 1 W radio **through its pins**
+(SPI), with no USB radio at all. It works like A (meshcore-pi on the Pi), and `./install.sh` handles it. See Setup C.
+
 Not sure? If your radio already works with the MeshCore phone app, it's running **companion** firmware: use **B**.
 A companion radio over **Wi-Fi or Bluetooth** works the same way as B. Choose TCP or BLE instead of Serial
 in RemoteTerm's installer.
@@ -46,7 +49,7 @@ in RemoteTerm's installer.
 |---|---|---|---|
 | **RAK4631 / WisBlock** (RAK19007, RAK19003…) | ✅ tested (`RAK_4631_kiss_modem`) | ✅ | The radio this kit was built on. |
 | **Station G3** with its own MeshCore board | ? only if a KISS build exists for it | ✅ | 1 W radio. Flash MeshCore **companion** firmware and use B. |
-| **Station G3** with a **Pi Zero 2 W** as its computer | ✖ | ✖ | Here the Pi drives the radio directly over SPI (no USB). Not covered by this kit yet. |
+| **Station G3** with a **Pi Zero 2 W** as its computer | – | – | Use **Setup C**: the Pi drives the G3's radio through its pins. |
 | **Heltec V3/V4, LilyGO T-Beam / T3-S3, Seeed XIAO**, other boards | ? check for a `*_kiss_modem` build | ✅ | Any board with MeshCore companion firmware works with B. |
 
 **? = check MeshCore's releases** for a file named `<your board>_kiss_modem`. If there isn't one, use Setup B.
@@ -106,6 +109,34 @@ python3 bot/deploy_bot.py       # sends the bot to RemoteTerm
 Skip `install.sh` and the `meshcore-pi/` folder: those are only for Setup A.
 
 **4. Try it:** send `test` in your test channel, or DM your bot `help`.
+
+## Setup C: Station G3 with a Pi Zero 2 W (about 20 minutes)
+
+The **Station G3** carries a Pi Zero 2 W as its computer: the Pi sits in the G3's 40-pin socket and talks to
+the G3's SX1262 radio over SPI. The G3's 1 W amplifier boosts it to about 30 dBm.
+
+**1. Hardware:** Pi Zero 2 W (with header) in the G3's MCU socket, **antenna on the G3**, power the G3 as B&Q
+says (its board feeds the Pi). Flash Raspberry Pi OS Lite (64-bit) to the Pi's card first.
+
+**2. On the Pi:** the same as Setup A:
+```bash
+git clone https://github.com/VeiledLink/meshcore-bot-starter ~/meshcore-bot-starter
+cd ~/meshcore-bot-starter
+./install.sh
+```
+When it asks **"Which radio?"**, answer **2 (Station G3)**. It then:
+- writes the G3 radio config. The pin map is B&Q's official one (also used by Meshtastic): SPI0 CE0,
+  **IRQ/DIO1 = GPIO 22, Busy = GPIO 24, Reset = GPIO 16**, DIO2 RF switch, DIO3 TCXO 1.8 V;
+- turns on SPI and installs the radio library (LoRaRF, using Raspberry Pi OS's `rpi-lgpio`).
+  If SPI was off, **reboot and run `./install.sh` again**;
+- asks the **radio chip power: 19 dBm max**. That's the power going *into* the 1 W amplifier, not the antenna
+  power. Lower it if the G3 sits near other radios.
+
+**3. Try it:** send `test` in your test channel. Check the radio started: `journalctl -u meshcore-pi -n 30`.
+
+Pin map source: B&Q Station G3 wiki (wiki.bqvoy.com/en/devkits/station-g3) and Meshtastic's
+`lora-rpi-BQ-SG3-BQ35LORA900V1M-slot1.yaml`. **Not yet tested end to end with this kit**: if something doesn't
+work, open an issue with the output of `journalctl -u meshcore-pi -n 50`.
 
 ## Changing things later
 

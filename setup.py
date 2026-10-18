@@ -103,9 +103,16 @@ def radio_config(bot_name):
     section("Radio")
     config = MCP_DIR / "config.toml"
     old = config.read_text() if config.exists() else ""
-    ports = sorted(glob.glob("/dev/serial/by-id/*"))
+    print("Which radio?")
+    print("  1) A radio with the KISS modem firmware, plugged in by USB (Setup A)")
+    print("  2) A Station G3 with this Pi Zero 2 W plugged into it - radio on the Pi's pins (Setup C)")
+    g3 = ask("Choice", 2 if 'type = "lora"' in old else 1) == "2"
+    ports = [] if g3 else sorted(glob.glob("/dev/serial/by-id/*"))
     current = re.search(r'^port\s*=\s*"([^"]+)"', old, re.M)
-    if ports:
+    port = None
+    if g3:
+        pass
+    elif ports:
         print("Radios plugged in:")
         for i, p in enumerate(ports, 1):
             print(f"  {i}) {os.path.basename(p)}")
@@ -127,17 +134,30 @@ def radio_config(bot_name):
         bw = ask_number("Bandwidth (kHz)", 62.5, float, 7, 500)
         sf = ask_number("Spreading factor", 7, int, 5, 12)
         cr = ask_number("Coding rate", 5, int, 5, 8)
-    print("Transmit power: 22 dBm is the usual maximum. Indoors, near other radios, or close to a")
-    print("repeater, 10-17 is plenty.")
-    power = ask_number("Transmit power (dBm)", 17, int, -9, 22)
+    if g3:
+        print("Transmit power: this is the radio chip's power going INTO the G3's 1 W amplifier.")
+        print("19 is the maximum (about 30 dBm / 1 W out of the antenna). Lower it if the G3 is close")
+        print("to other radios.")
+        power = ask_number("Radio chip power (dBm, max 19)", 19, int, -9, 19)
+    else:
+        print("Transmit power: 22 dBm is the usual maximum. Indoors, near other radios, or close to a")
+        print("repeater, 10-17 is plenty.")
+        power = ask_number("Transmit power (dBm)", 17, int, -9, 22)
 
     key = re.search(r'^privatekey\s*=\s*"([0-9a-fA-F]+)"', old, re.M)
     lines = [
         "# Written by meshcore-bot-starter/setup.py - run it again to change these.",
-        'interfaces = ["kiss"]', 'devices = ["companion"]', "",
+        f'interfaces = ["{"g3" if g3 else "kiss"}"]', 'devices = ["companion"]', "",
         "[dispatcher]", "pass_internal = false", "",
-        "[interface.kiss]", 'type = "kiss"', f'port = "{port}"',
-        f"freq = {freq}", f"bw = {bw}", f"sf = {sf}", f"cr = {cr}", f"txpower = {power}", "",
+        *(["# Station G3 + Pi Zero 2 W: the SX1262 on the Pi's SPI pins. Pin map from B&Q's official",
+           "# Meshtastic file lora-rpi-BQ-SG3-BQ35LORA900V1M-slot1.yaml (wiki.bqvoy.com/en/devkits/station-g3).",
+           "[interface.g3]", 'type = "lora"',
+           f"frequency = {round(freq * 1e6)}", f"bw = {round(bw * 1000)}", f"sf = {sf}", f"cr = {cr}",
+           f"txpower = {power}       # into the 1 W amplifier; 19 max",
+           "spi = 0", "cs = 0", "irq = 22", "busy = 24", "reset = 16",
+           "dio2.rfswitch = true", "dio3.voltage = 1.8", "dio3.tcxo_delay = 10", ""] if g3 else
+          ["[interface.kiss]", 'type = "kiss"', f'port = "{port}"',
+           f"freq = {freq}", f"bw = {bw}", f"sf = {sf}", f"cr = {cr}", f"txpower = {power}", ""]),
         "[device.companion]", f'name = "{bot_name}"',
         f'privatekey = "{key[1]}"' if key else
         "# privatekey: meshcore-pi prints one on first start - setup.py saves it here next time",

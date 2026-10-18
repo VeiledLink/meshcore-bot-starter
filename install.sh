@@ -44,12 +44,29 @@ MCP_DIR="$MCP_DIR" "$HERE/meshcore-pi/patch_meshcore_pi.sh"
 step "3/7 Your bot's settings"
 MCP_DIR="$MCP_DIR" REMOTETERM_DIR="$RT_DIR" python3 "$HERE/setup.py"
 [[ -f "$MCP_DIR/config.toml" ]] || die "no $MCP_DIR/config.toml - run setup.py again and answer yes to the radio question"
+if grep -q '^type = "lora"' "$MCP_DIR/config.toml"; then
+    # Setup C (Station G3 + Pi Zero): the radio is on the Pi's SPI pins, driven by LoRaRF.
+    # GPIO comes from Raspberry Pi OS's own packages (rpi-lgpio stands in for RPi.GPIO,
+    # which doesn't work on current kernels), so meshcore-pi's venv must see system packages.
+    echo "Station G3: turning on SPI and installing the radio library..."
+    if [[ $SERVICES -eq 1 ]]; then
+        sudo apt-get install -y -qq python3-rpi-lgpio python3-lgpio python3-spidev >/dev/null
+        sudo raspi-config nonint do_spi 0
+        sudo usermod -aG spi,gpio "$USER"
+    fi
+    sed -i 's/^include-system-site-packages = false/include-system-site-packages = true/' "$MCP_DIR/venv/pyvenv.cfg"
+    "$MCP_DIR/venv/bin/pip" uninstall -q -y RPi.GPIO 2>/dev/null || true
+    "$MCP_DIR/venv/bin/pip" install -q --disable-pip-version-check --no-deps LoRaRF
+    "$MCP_DIR/venv/bin/python" -c "from LoRaRF import SX126x; import RPi.GPIO, spidev" \
+        || die "radio library didn't install - check the messages above"
+    [[ -e /dev/spidev0.0 ]] || echo "NOTE: SPI turns on after a reboot - reboot, then run ./install.sh again."
+fi
 
 step "4/7 meshcore-pi service"
 if [[ $SERVICES -eq 1 ]]; then
     sudo tee /etc/systemd/system/meshcore-pi.service >/dev/null <<EOF
 [Unit]
-Description=meshcore-pi (MeshCore node on a KISS modem radio)
+Description=meshcore-pi (MeshCore node)
 After=network-online.target
 Wants=network-online.target
 
