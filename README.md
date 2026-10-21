@@ -23,6 +23,8 @@ People use commands by **DM**, or in a channel with **`@[YourBot] command`**. In
 **`test`** works on its own. The bot never talks in channels you mark as quiet (like Public), and answers each
 person at most once every 30 seconds (you can change this).
 
+Optional add-on: [earthquake and weather alerts](#optional-earthquake-and-weather-alerts) posted to a channel.
+
 ## Choose your setup
 
 The bot runs inside **RemoteTerm** (a web UI for MeshCore that can run bot code). What differs is how RemoteTerm
@@ -161,6 +163,29 @@ Reply for 'rules': Be kind, no spam. Welcome {name}!
 ```
 `{name}` becomes the sender's name. Keep replies under ~100 characters so they fit in one mesh message.
 Remove a command by entering `-rules`.
+
+## Optional: earthquake and weather alerts
+
+`alerts/feed_alerts.py` checks two free public feeds every 3 minutes and posts anything new near you to a channel:
+
+- **Earthquakes** from USGS, within `radius_mi` of you and at least `min_magnitude`
+- **Weather alerts** from the National Weather Service (US only) for your exact location
+
+```bash
+cd ~/meshcore-bot-starter
+cp alerts/settings.example.json alerts/settings.json
+nano alerts/settings.json          # your lat/lon, channel, radius, and contact (NWS asks for one)
+python3 alerts/feed_alerts.py --dry-run   # see what it would post right now
+```
+Add the channel (for example `#alerts`) in RemoteTerm first. Then run it every 3 minutes:
+```bash
+# if your username isn't "pi", change User= and the paths in feed-alerts.service first
+sudo cp alerts/feed-alerts.service alerts/feed-alerts.timer /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now feed-alerts.timer
+```
+The first run posts nothing: it only notes the alerts already out there, so a new install doesn't flood the
+channel. Want other feeds (fires, air quality, river levels)? Copy `quake_posts()` as a pattern. Most agencies
+publish free JSON feeds. Keep posts short, and don't post more often than every few minutes.
 
 ## Updating
 

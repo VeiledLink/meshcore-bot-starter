@@ -1,0 +1,9 @@
+[Unit]
+Description=Check for new earthquakes and weather alerts every 3 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=3min
+
+[Install]
+WantedBy=timers.target

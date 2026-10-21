@@ -1,0 +1,9 @@
+[Unit]
+Description=MeshCore starter bot: earthquake + weather alerts
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=pi
+WorkingDirectory=/home/pi/meshcore-bot-starter
+ExecStart=/usr/bin/python3 /home/pi/meshcore-bot-starter/alerts/feed_alerts.py

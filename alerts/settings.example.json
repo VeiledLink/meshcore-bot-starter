@@ -1,0 +1,10 @@
+{
+  "channel": "#alerts",
+  "lat": 37.30,
+  "lon": -120.48,
+  "radius_mi": 100,
+  "min_magnitude": 2.5,
+  "earthquakes": true,
+  "weather": true,
+  "contact": "your-email-or-github"
+}
