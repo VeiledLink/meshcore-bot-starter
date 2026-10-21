@@ -23,7 +23,8 @@ People use commands by **DM**, or in a channel with **`@[YourBot] command`**. In
 **`test`** works on its own. The bot never talks in channels you mark as quiet (like Public), and answers each
 person at most once every 30 seconds (you can change this).
 
-Optional add-on: [earthquake and weather alerts](#optional-earthquake-and-weather-alerts) posted to a channel.
+Optional add-on: [alerts for your area](#optional-alerts-for-your-area) (earthquakes, weather, wildfires, air quality,
+rivers, space weather) posted to a channel.
 
 ## Choose your setup
 
@@ -164,12 +165,19 @@ Reply for 'rules': Be kind, no spam. Welcome {name}!
 `{name}` becomes the sender's name. Keep replies under ~100 characters so they fit in one mesh message.
 Remove a command by entering `-rules`.
 
-## Optional: earthquake and weather alerts
+## Optional: alerts for your area
 
-`alerts/feed_alerts.py` checks two free public feeds every 3 minutes and posts anything new near you to a channel:
+`alerts/feed_alerts.py` checks free public feeds every 3 minutes and posts anything new near you to a channel.
+Turn each one on or off in `alerts/settings.json`:
 
-- **Earthquakes** from USGS, within `radius_mi` of you and at least `min_magnitude`
-- **Weather alerts** from the National Weather Service (US only) for your exact location
+| Alert | Source | Posts when | Example |
+|---|---|---|---|
+| Earthquakes | USGS | within `radius_mi`, at least `min_magnitude` | 🌎 Earthquake M3.1 10 km E of Chowchilla, CA (18 mi away) 7:12 PM |
+| Weather | National Weather Service (US) | a new alert for your exact location | ⚠️ Heat Advisory: Merced until Wed 8 PM |
+| Wildfires | National wildfire map (WFIGS) | a new fire within `fire_radius_mi`, at least `min_fire_acres` | 🔥 Oak Fire, Mariposa Co: 1,200 acres, 20% contained (25 mi away) |
+| Air quality | AirNow (US) | your nearest area reaches `min_aqi` (151 = Unhealthy) | 😷 Air quality Unhealthy: AQI 162 (PM2.5) in Merced, CA |
+| Rivers | NOAA river gauges | a gauge within `river_radius_mi` reaches flood stage | 🌊 Bear Creek at Merced: minor flooding, 12.5 ft |
+| Space weather | NOAA | a geomagnetic storm of at least `min_kp` (7 = strong) | 🌌 Geomagnetic storm G3 (Kp 7): aurora possible, GPS/HF may be off |
 
 ```bash
 cd ~/meshcore-bot-starter
@@ -184,8 +192,12 @@ sudo cp alerts/feed-alerts.service alerts/feed-alerts.timer /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable --now feed-alerts.timer
 ```
 The first run posts nothing: it only notes the alerts already out there, so a new install doesn't flood the
-channel. Want other feeds (fires, air quality, river levels)? Copy `quake_posts()` as a pattern. Most agencies
-publish free JSON feeds. Keep posts short, and don't post more often than every few minutes.
+channel. Each alert is posted once (a fire once when it first shows up, air quality and storms at most once a day
+per level).
+
+Want more, like power outages, road incidents or evacuations? Those come from your state or utility, not a
+national feed. Copy one of the `*_posts()` functions as a pattern. Most agencies publish free JSON feeds. Keep
+posts short, and don't post more often than every few minutes.
 
 ## Updating
 

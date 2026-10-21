@@ -2,9 +2,24 @@
   "channel": "#alerts",
   "lat": 37.30,
   "lon": -120.48,
+  "contact": "your-email-or-github",
+
+  "earthquakes": true,
   "radius_mi": 100,
   "min_magnitude": 2.5,
-  "earthquakes": true,
+
   "weather": true,
-  "contact": "your-email-or-github"
+
+  "fires": true,
+  "fire_radius_mi": 75,
+  "min_fire_acres": 10,
+
+  "air_quality": true,
+  "min_aqi": 151,
+
+  "rivers": true,
+  "river_radius_mi": 50,
+
+  "space_weather": true,
+  "min_kp": 7
 }
